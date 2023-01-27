@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.c": "c",
+        "cinttypes": "cpp",
+        "cstdint": "cpp"
+    }
+}
