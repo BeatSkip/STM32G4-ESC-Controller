@@ -13,7 +13,7 @@ void pinModeAF(int ulPin, uint32_t Alternate)
    LL_GPIO_SetPinMode(get_GPIO_Port(STM_PORT(pn)), STM_LL_GPIO_PIN(pn), LL_GPIO_MODE_ALTERNATE);
 }
 
-void EncoderInit(void)
+TIM_HandleTypeDef EncoderInit(void)
 {
    // use standaard Arduino function for basic setup
    pinMode(PB6, INPUT);  // TIM4
@@ -50,5 +50,6 @@ void EncoderInit(void)
    if(HAL_TIM_Encoder_Init(&Encoder_Handle, &sEncoderConfig) != HAL_OK) printf("Init error of TIM4");
    HAL_TIM_Encoder_Start(&Encoder_Handle, TIM_CHANNEL_ALL);
    
+   return Encoder_Handle;
 }
 

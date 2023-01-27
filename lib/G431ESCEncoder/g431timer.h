@@ -11,7 +11,8 @@ extern "C" {
 
 void pinModeAF(int ulPin, uint32_t Alternate);
 
-void EncoderInit(void);
+//void EncoderInit(void);
+TIM_HandleTypeDef EncoderInit(void);
 
 #ifdef __cplusplus
 }

@@ -1,17 +1,19 @@
 #ifndef __G431ESCENC_H__
 #define __G431ESCENC_H__
 
+
 #include "common/base_classes/Sensor.h"
 #include "g431timer.h"
 #include <HardwareTimer.h>
 
 #define GETBIT(var, bit)	(((var) >> (bit)) & 1)
 
+void ENC_Overflow_IRQ();
 
 
-class G431ESCEncoder : public Sensor {
-public:
-	explicit G431ESCEncoder(uint32_t _ppr = 600, bool useIndex = false);
+class G431EscEncoder : public Sensor {
+  public:
+	  explicit G431EscEncoder(uint32_t _ppr = 600, bool useIndex = false);
     /** encoder initialise pins */
     void init() override;
     // Encoder configuration
@@ -47,8 +49,8 @@ public:
     int hasIndex();  // !< function returning 1 if encoder has index pin and 0 if not.
 
     
-
     TIM_HandleTypeDef encoder_handle;
+    
 
     u_int16_t rotations_per_overflow;
     u_int16_t ticks_per_overflow;
@@ -61,4 +63,8 @@ public:
     // velocity calculation variables
     volatile int32_t pulse_timestamp, prev_timestamp;
 };
+
+static G431EscEncoder * enc_self;
+
+
 #endif

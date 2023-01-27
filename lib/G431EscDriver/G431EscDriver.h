@@ -7,7 +7,7 @@
 /**
  6 pwm bldc driver class
 */
-class G431ESCDriver6PWM: public BLDCDriver
+class G431EscDriver6PWM: public BLDCDriver
 {
   public:
     /**
@@ -20,7 +20,7 @@ class G431ESCDriver6PWM: public BLDCDriver
       @param phC_l A phase pwm pin
       @param en enable pin (optional input)
     */
-    G431ESCDriver6PWM(uint32_t pwmfreq, uint32_t dead_time, float psu, float limit);
+    G431EscDriver6PWM(uint32_t pwmfreq, uint32_t dead_time, float psu, float limit);
     
     /**  Motor hardware init function */
   	int init() override;

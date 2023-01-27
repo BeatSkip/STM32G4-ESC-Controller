@@ -1,7 +1,7 @@
 #include "G431ESCDriver.h"
 
 
-G431ESCDriver6PWM::G431ESCDriver6PWM(uint32_t pwmfreq, uint32_t dead_time, float psu, float limit){
+G431EscDriver6PWM::G431EscDriver6PWM(uint32_t pwmfreq, uint32_t dead_time, float psu, float limit){
   // Pin initialization
   
 
@@ -16,7 +16,7 @@ G431ESCDriver6PWM::G431ESCDriver6PWM(uint32_t pwmfreq, uint32_t dead_time, float
 }
 
 // enable motor driver
-void  G431ESCDriver6PWM::enable(){
+void  G431EscDriver6PWM::enable(){
     // enable_pin the driver - if enable_pin pin available
     if ( _isset(enable_pin) ) digitalWrite(enable_pin, enable_active_high);
     // set zero to PWM
@@ -24,7 +24,7 @@ void  G431ESCDriver6PWM::enable(){
 }
 
 // disable motor driver
-void G431ESCDriver6PWM::disable()
+void G431EscDriver6PWM::disable()
 {
   // set zero to PWM
   setPwm(0, 0, 0);
@@ -34,7 +34,7 @@ void G431ESCDriver6PWM::disable()
 }
 
 // init hardware pins
-int G431ESCDriver6PWM::init() {
+int G431EscDriver6PWM::init() {
 
     MyTim1 = pwm_init_high_and_low(IN1_H, IN1_L, IN2_H, IN2_L, IN3_H, IN3_L, pwm_frequency);
     MyTim1->resume();
@@ -51,7 +51,7 @@ int G431ESCDriver6PWM::init() {
 
 
 // Set voltage to the pwm pin
-void G431ESCDriver6PWM::setPwm(float Ua, float Ub, float Uc) {
+void G431EscDriver6PWM::setPwm(float Ua, float Ub, float Uc) {
   // limit the voltage in driver
   Ua = _constrain(Ua, 0, voltage_limit);
   Ub = _constrain(Ub, 0, voltage_limit);
@@ -69,14 +69,14 @@ void G431ESCDriver6PWM::setPwm(float Ua, float Ub, float Uc) {
   pwm_manual(dc_a,dc_b,dc_c);
 }
 
-void G431ESCDriver6PWM::pwm_manual(uint16_t Ua, uint16_t Ub, uint16_t Uc) {
+void G431EscDriver6PWM::pwm_manual(uint16_t Ua, uint16_t Ub, uint16_t Uc) {
   pwm_set(A_PHASE_UH,Ua, RESOLUTION_13B_COMPARE_FORMAT);
   pwm_set(A_PHASE_VH,Ub, RESOLUTION_13B_COMPARE_FORMAT);
   pwm_set(A_PHASE_WH,Uc, RESOLUTION_13B_COMPARE_FORMAT);
 }
 
 
-HardwareTimer* G431ESCDriver6PWM::pwm_init_high_and_low(int uhPin, int ulPin, int vhPin, int vlPin, int whPin, int wlPin,uint32_t PWM_freq)
+HardwareTimer* G431EscDriver6PWM::pwm_init_high_and_low(int uhPin, int ulPin, int vhPin, int vlPin, int whPin, int wlPin,uint32_t PWM_freq)
 {
   PinName uhPinName = digitalPinToPinName(uhPin);
   PinName ulPinName = digitalPinToPinName(ulPin);
@@ -117,7 +117,7 @@ HardwareTimer* G431ESCDriver6PWM::pwm_init_high_and_low(int uhPin, int ulPin, in
   return HT;
 }
 
-void G431ESCDriver6PWM::pwm_set(int ulPin, uint32_t value, int resolution)
+void G431EscDriver6PWM::pwm_set(int ulPin, uint32_t value, int resolution)
 {
   PinName pin = digitalPinToPinName(ulPin);
   TIM_TypeDef *Instance = (TIM_TypeDef *)pinmap_peripheral(pin, PinMap_PWM);
@@ -128,7 +128,7 @@ void G431ESCDriver6PWM::pwm_set(int ulPin, uint32_t value, int resolution)
   HT->setCaptureCompare(channel, value, RESOLUTION_13B_COMPARE_FORMAT);
 }
 
-void G431ESCDriver6PWM::setPhaseState(PhaseState sa, PhaseState sb, PhaseState sc) {
+void G431EscDriver6PWM::setPhaseState(PhaseState sa, PhaseState sb, PhaseState sc) {
   //phase_state[0] = sa;
   //phase_state[1] = sb;
   //phase_state[2] = sc;

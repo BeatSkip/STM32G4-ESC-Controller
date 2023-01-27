@@ -1,12 +1,20 @@
-#include "G431ESCEncoder.h"
+#include "G431EscEncoder.h"
+
+
+HardwareTimer timqenc(TIM4);
 
 /*
   HardwareEncoder(int cpr)
 */
 
 
+void ENC_Overflow_IRQ(){
+    enc_self->handleOverflow();
+}
 
-G431ESCEncoder::G431ESCEncoder(uint32_t _ppr, bool useIndex) {
+
+
+G431EscEncoder::G431EscEncoder(uint32_t _ppr, bool useIndex) {
     rotations_per_overflow = 10;
    
 
@@ -30,41 +38,41 @@ G431ESCEncoder::G431ESCEncoder(uint32_t _ppr, bool useIndex) {
 /*
   Shaft angle calculation
 */
-float G431ESCEncoder::getSensorAngle() { return getAngle(); }
+float G431EscEncoder::getSensorAngle() { return getAngle(); }
 
-float G431ESCEncoder::getMechanicalAngle() {
+float G431EscEncoder::getMechanicalAngle() {
     return _2PI * (count % static_cast<int>(cpr)) / static_cast<float>(cpr);
 }
 
-float G431ESCEncoder::getAngle() {
+float G431EscEncoder::getAngle() {
     update();
     return _2PI * (count / static_cast<float>(cpr) +
                    overflow_count * rotations_per_overflow);
 }
 
-double G431ESCEncoder::getPreciseAngle() {
+double G431EscEncoder::getPreciseAngle() {
     return _2PI * (count / static_cast<double>(cpr) +
                    overflow_count * rotations_per_overflow);
 }
 
 
-int32_t G431ESCEncoder::getFullRotations() {
+int32_t G431EscEncoder::getFullRotations() {
     return count / static_cast<int>(cpr) +
            overflow_count * rotations_per_overflow;
 }
 
 
-uint16_t G431ESCEncoder::getEncoderCount(){
+uint16_t G431EscEncoder::getEncoderCount(){
     update();
     return count % cpr;
 }
 
-double G431ESCEncoder::getEncoderAngle() {
+double G431EscEncoder::getEncoderAngle() {
     return 360.0 * (cpr / static_cast<double>(getEncoderCount())); 
 }
 
 
-void G431ESCEncoder::resetCounts() {
+void G431EscEncoder::resetCounts() {
     (TIM4->CNT) = 0;
     overflow_count = 0;
     prev_overflow_count = 0;
@@ -77,7 +85,7 @@ void G431ESCEncoder::resetCounts() {
 /*
   Shaft velocity calculation
 */
-float G431ESCEncoder::getVelocity() {
+float G431EscEncoder::getVelocity() {
     // sampling time calculation
     float dt = (pulse_timestamp - prev_timestamp) * 1e-6f;
     // quick fix for strange cases (micros overflow)
@@ -95,21 +103,21 @@ float G431ESCEncoder::getVelocity() {
 }
 
 // getter for index pin
-int G431ESCEncoder::needsSearch() { return false; }
+int G431EscEncoder::needsSearch() { return false; }
 
 // private function used to determine if encoder has index
-int G431ESCEncoder::hasIndex() { return 0; }
+int G431EscEncoder::hasIndex() { return 0; }
 
 // encoder initialisation of the hardware pins
 // and calculation variables
-void G431ESCEncoder::init() {
+void G431EscEncoder::init() {
     // overflow handling
     rotations_per_overflow = 10;
     ticks_per_overflow = cpr * rotations_per_overflow;
 
     
     // set up GPIO
-    EncoderInit();
+    encoder_handle = EncoderInit();
     //TIM4->CNT = 32768;
     // counter setup
     overflow_count = 0;
@@ -120,12 +128,12 @@ void G431ESCEncoder::init() {
     prev_timestamp = getCurrentMicros();
     pulse_timestamp = getCurrentMicros();
 
-   
-    
+    enc_self = this;
 
+    timqenc.attachInterrupt(ENC_Overflow_IRQ);
 }
 
-void G431ESCEncoder::update() {
+void G431EscEncoder::update() {
     // handle overflow of the 16-bit counter here
     // must be called at least twice per traversal of overflow range
     // TODO(conroy-cheers): investigate performance impact
@@ -141,7 +149,7 @@ void G431ESCEncoder::update() {
 
 
 
-void G431ESCEncoder::handleOverflow(void){
+void G431EscEncoder::handleOverflow(void){
     if((GETBIT(TIM4->CR1,4))){
         overflow_count++;
     }else{
