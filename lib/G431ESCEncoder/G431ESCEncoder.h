@@ -36,8 +36,8 @@ class G431EscEncoder : public Sensor {
      * 1 - ecoder with index
      */
     int needsSearch() override;
-	void handleOverflow();
-	void update() override;
+	  void handleOverflow();
+	  void update() override;
 
 
     //added personal methods
@@ -45,6 +45,8 @@ class G431EscEncoder : public Sensor {
     double getEncoderAngle();
     void resetCounts();
 
+    int32_t dbg_total();
+    int32_t dbg_overflow();
   private:
     int hasIndex();  // !< function returning 1 if encoder has index pin and 0 if not.
 

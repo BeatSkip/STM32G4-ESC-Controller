@@ -26,7 +26,7 @@ G431EscEncoder::G431EscEncoder(uint32_t _ppr, bool useIndex) {
 
     cpr = _ppr * 4; // 4x for quadrature
     ppr = _ppr;
-    ticks_per_overflow = cpr * 10;
+    ticks_per_overflow = cpr * rotations_per_overflow;
 
     // velocity calculation variables
     prev_timestamp = getCurrentMicros();
@@ -69,6 +69,14 @@ uint16_t G431EscEncoder::getEncoderCount(){
 
 double G431EscEncoder::getEncoderAngle() {
     return 360.0 * (cpr / static_cast<double>(getEncoderCount())); 
+}
+
+int32_t G431EscEncoder::dbg_overflow(){
+    return overflow_count;
+}
+
+int32_t G431EscEncoder::dbg_total(){
+    return (overflow_count * ticks_per_overflow) + count;
 }
 
 
@@ -151,9 +159,9 @@ void G431EscEncoder::update() {
 
 void G431EscEncoder::handleOverflow(void){
     if((GETBIT(TIM4->CR1,4))){
-        overflow_count++;
-    }else{
         overflow_count--;
+    }else{
+        overflow_count++;
     }
 }
 

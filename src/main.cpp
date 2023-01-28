@@ -11,19 +11,20 @@
 BLDCMotor motor = BLDCMotor(7);
 LowsideCurrentSense currentSense = LowsideCurrentSense(0.003, -64.0/7.0, A_OP1_OUT, A_OP2_OUT, A_OP3_OUT);
 G431EscEncoder encoder = G431EscEncoder(ENCODER_PPR);
-G431EscDriver6PWM driver = G431EscDriver6PWM(50000,80,12.0f,12.0f);
+G431EscDriver6PWM driver = G431EscDriver6PWM(30000,75,12.0f,5.0f);
 
 void printEncoder();
 
-Commander command = Commander(Serial);
-void doTarget(char* cmd) { command.motion(&motor, cmd); }
+Commander commander = Commander(Serial);
+void onMotor(char* cmd){ commander.motor(&motor,cmd); }
+
 
 int currentcount = 0;
 
 void setup() {
   HAL_Init();
   //Serial setup
-  Serial.begin(1000000);
+  Serial.begin(2000000);
   Serial.println("STM32 B-G431B-ESC1 Tester");
   Serial.println("-------------------------");
 
@@ -45,53 +46,45 @@ void setup() {
   currentSense.skip_align = true;
   motor.linkCurrentSense(&currentSense);
 
-  // aligning voltage [V]
-  motor.voltage_sensor_align = 3;
-  // index search velocity [rad/s]
-  motor.velocity_index_search = 3;
-
-  // set motion control loop to be used
+   // choose FOC modulation
+  motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
+  // set control loop type to be used
   motor.controller = MotionControlType::angle;
 
-  // contoller configuration 
-  // default parameters in defaults.h
-
-  // velocity PI controller parameters
-  motor.PID_velocity.P = 0.2;
-  motor.PID_velocity.I = 20;
+  // contoller configuration based on the controll type
+  motor.P_angle.P = 0.01f;
+  motor.P_angle.I = 0;
+  motor.P_angle.D = 0;
   // default voltage_power_supply
-  motor.voltage_limit = 6;
-  // jerk control using voltage voltage ramp
-  // default value is 300 volts per sec  ~ 0.3V per millisecond
-  motor.PID_velocity.output_ramp = 1000;
- 
-  // velocity low pass filtering time constant
-  motor.LPF_velocity.Tf = 0.01;
+  motor.voltage_limit = 3;
 
-  // angle P controller
-  motor.P_angle.P = 20;
-  //  maximal velocity of the position control
-  motor.velocity_limit = 4;
+  // velocity low pass filtering time constant
+  // angle loop velocity limit
+  motor.velocity_limit = 5;
+
 
   motor.useMonitoring(Serial);
-  
+  //motor.monitor_downsample = 0;
   // initialize motor
+
+  // add target command T
+  commander.add('M', onMotor, "motor");
+  commander.verbose = VerboseMode::user_friendly;
+
   motor.init();
   // align encoder and start FOC
   motor.initFOC();
-
-  // add target command T
-  command.add('T', doTarget, "target angle");
-
   Serial.println(F("Motor ready."));
-  Serial.println(F("Set the target angle using serial terminal:"));
-  _delay(1000);
-  motor.enable();
+  _delay(500);
+  Serial.println("Starting motion control!");
 }
 
 void loop(){
+  motor.loopFOC();
   motor.move();
-  command.run();
+  motor.monitor();
+  commander.run();
+  //printEncoder();
 }  
 
 
@@ -101,7 +94,7 @@ void printEncoder(){
   auto cnt = encoder.getEncoderCount();
   if(currentcount != cnt){
     currentcount = cnt;
-    printf("Count: %d\tAngle: %f\r\n", cnt,encoder.getEncoderAngle());
+    printf("Count: %d\Total: %d\toverflow: %d\r\n", cnt,encoder.dbg_total(), encoder.dbg_overflow());
   }
   
 }
