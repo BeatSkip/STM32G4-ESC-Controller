@@ -41,18 +41,18 @@ G431EscEncoder::G431EscEncoder(uint32_t _ppr, bool useIndex) {
 float G431EscEncoder::getSensorAngle() { return getAngle(); }
 
 float G431EscEncoder::getMechanicalAngle() {
+    update();
     return _2PI * (count % static_cast<int>(cpr)) / static_cast<float>(cpr);
 }
 
 float G431EscEncoder::getAngle() {
     update();
-    return _2PI * (count / static_cast<float>(cpr) +
-                   overflow_count * rotations_per_overflow);
+    return _2PI * (dbg_total() / static_cast<float>(cpr));
 }
 
 double G431EscEncoder::getPreciseAngle() {
-    return _2PI * (count / static_cast<double>(cpr) +
-                   overflow_count * rotations_per_overflow);
+    update();
+    return _2PI * (dbg_total() / static_cast<double>(cpr));
 }
 
 
@@ -68,7 +68,7 @@ uint16_t G431EscEncoder::getEncoderCount(){
 }
 
 double G431EscEncoder::getEncoderAngle() {
-    return 360.0 * (cpr / static_cast<double>(getEncoderCount())); 
+    return 360.0 * (count % static_cast<int>(cpr)) / static_cast<float>(cpr);
 }
 
 int32_t G431EscEncoder::dbg_overflow(){
@@ -120,12 +120,12 @@ int G431EscEncoder::hasIndex() { return 0; }
 // and calculation variables
 void G431EscEncoder::init() {
     // overflow handling
-    rotations_per_overflow = 10;
+    rotations_per_overflow = 8;
     ticks_per_overflow = cpr * rotations_per_overflow;
 
     
     // set up GPIO
-    encoder_handle = EncoderInit();
+    encoder_handle = EncoderInit(ticks_per_overflow);
     //TIM4->CNT = 32768;
     // counter setup
     overflow_count = 0;

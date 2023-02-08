@@ -12,7 +12,7 @@ extern "C" {
 void pinModeAF(int ulPin, uint32_t Alternate);
 
 //void EncoderInit(void);
-TIM_HandleTypeDef EncoderInit(void);
+TIM_HandleTypeDef EncoderInit(uint32_t period);
 
 #ifdef __cplusplus
 }

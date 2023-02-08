@@ -13,7 +13,7 @@ void pinModeAF(int ulPin, uint32_t Alternate)
    LL_GPIO_SetPinMode(get_GPIO_Port(STM_PORT(pn)), STM_LL_GPIO_PIN(pn), LL_GPIO_MODE_ALTERNATE);
 }
 
-TIM_HandleTypeDef EncoderInit(void)
+TIM_HandleTypeDef EncoderInit(uint32_t period)
 {
    // use standaard Arduino function for basic setup
    pinMode(PB6, INPUT);  // TIM4
@@ -26,7 +26,7 @@ TIM_HandleTypeDef EncoderInit(void)
    TIM_HandleTypeDef       Encoder_Handle;
    TIM_Encoder_InitTypeDef sEncoderConfig;
 
-   Encoder_Handle.Init.Period             = 24000;
+   Encoder_Handle.Init.Period             = period;
    Encoder_Handle.Init.Prescaler          = 0;
    Encoder_Handle.Init.ClockDivision      = 0;
    Encoder_Handle.Init.CounterMode        = TIM_COUNTERMODE_UP;
